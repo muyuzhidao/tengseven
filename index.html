@@ -17,6 +17,8 @@
 /* T1 展示字体：Noto Sans SC Black 子集（SIL OFL 1.1，11.8KB），只收录展示位汉字；
    拉丁字母与数字刻意不在子集内 → 自动落到平台重黑（Win: Segoe UI Black / Mac: SF Black） */
 @font-face{font-family:"QZ Display";src:url("fonts/qz-display-900.woff2") format("woff2");font-weight:800 900;font-display:swap}
+/* 拉丁展示字体（Archivo Black，SIL OFL 1.1）：统一 makes/TengSeven/数字 在各平台的 900 黑体字形 */
+@font-face{font-family:"Archivo Black";src:url("fonts/archivo-black-latin.woff2") format("woff2");font-weight:800 900;font-display:swap}
 :root{
   --paper:#FAEFD6;
   --cream:#F2E4C9; /* 与 3D 小狗视频背景同族暖奶油 */
@@ -30,7 +32,7 @@
   --line-strong:rgba(26,26,26,.16);
   --ghost:rgba(26,26,26,.13);
   --sans:"Segoe UI","PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",system-ui,-apple-system,sans-serif;
-  --display:"QZ Display","Segoe UI",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --display:"QZ Display","Archivo Black","Segoe UI",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,"PingFang SC","Microsoft YaHei",monospace;
   --ease:cubic-bezier(.16,1,.3,1);
   --maxw:1240px;
@@ -63,6 +65,10 @@ img{display:block}
 mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%,transparent 99%);color:var(--ink);padding:0 .12em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .ic{width:19px;height:19px;stroke:var(--ink);flex-shrink:0}
 .ic-badge{width:30px;height:30px}
+.skip-link{position:fixed;left:16px;top:-64px;z-index:300;background:var(--hl);color:var(--ink);font-weight:800;padding:10px 18px;border-radius:8px;transition:top .25s var(--ease)}
+.skip-link:focus-visible{top:16px}
+.copy-toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,16px);z-index:300;background:var(--ink);color:var(--paper);font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:99px;opacity:0;transition:opacity .35s ease,transform .35s var(--ease);pointer-events:none}
+.copy-toast.show{opacity:1;transform:translate(-50%,0)}
 /* 展示位统一 900 重黑（汉字走 QZ Display 子集，拉丁/数字走平台重黑） */
 .hero-title,.tabs a,.prod-logo h3,.xp-role,.el-name,.nnum,.adv-num,.foot-ghost{font-family:var(--display)}
 .nw{white-space:nowrap}
@@ -156,9 +162,10 @@ mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%
   padding:clamp(26px,3.6vw,52px);
   display:grid;grid-template-columns:5fr 6fr;gap:clamp(22px,3.6vw,56px);align-items:center;
   position:relative;overflow:hidden;
+  transform:translateY(var(--lift,0px)) perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
   transition:transform .35s var(--ease),box-shadow .35s;
 }
-.prod-card:hover{transform:translateY(-5px);box-shadow:0 24px 60px -30px rgba(26,26,26,.25)}
+.prod-card:hover{--lift:-5px;box-shadow:0 24px 60px -30px rgba(26,26,26,.25)}
 .prod-card .vig{width:100%;aspect-ratio:16/11;object-fit:contain;transform:rotate(-1.2deg);transition:transform .45s var(--ease)}
 .prod-card:hover .vig{transform:rotate(0deg) scale(1.02)}
 .prod-card h3{position:relative;padding-bottom:12px}
@@ -189,6 +196,10 @@ mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%
 }
 .ncell{padding:clamp(16px,2vw,30px) clamp(10px,1.6vw,26px);border-left:1px solid var(--line)}
 .ncell:first-child{border-left:none;padding-left:clamp(12px,2vw,28px)}
+/* 数字格逐格入场（v4.6.4）：卡片 reveal 后按序浮现 */
+.js .num-card .ncell{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s var(--ease);transition-delay:calc(var(--i,0)*70ms)}
+.js .num-card.in .ncell{opacity:1;transform:none}
+.ncell:nth-child(2){--i:1}.ncell:nth-child(3){--i:2}.ncell:nth-child(4){--i:3}.ncell:nth-child(5){--i:4}.ncell:nth-child(6){--i:5}
 .nnum{font-weight:900;font-size:clamp(34px,4.2vw,64px);line-height:1;letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:clamp(34px,4.2cqw,64px)} /* 后一声明覆盖：支持容器查询单位的浏览器按卡片实宽取值 */
 .nnum em{
   font-style:normal;font-size:.36em;margin-left:3px;padding:.06em .18em;border-radius:4px;
@@ -197,7 +208,8 @@ mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%
 .nlabel{margin-top:12px;font-family:var(--sans);font-size:12.5px;color:var(--gray);letter-spacing:.05em;white-space:nowrap}
 .peek{position:relative;height:clamp(120px,15vh,170px);margin-top:clamp(14px,2.2vh,24px)}
 .peek-line{position:absolute;left:0;right:0;bottom:8px;width:100%;height:30px}
-.peek .pup-3d{position:absolute;right:10%;bottom:14px;width:clamp(150px,15vw,220px);-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 55%,#000 42%,transparent 78%);mask-image:radial-gradient(ellipse 52% 52% at 50% 55%,#000 42%,transparent 78%)}
+.peek .pup-3d{position:absolute;right:10%;bottom:14px;width:clamp(150px,15vw,220px);-webkit-mask-image:radial-gradient(ellipse 52% 52% at 50% 55%,#000 42%,transparent 78%);mask-image:radial-gradient(ellipse 52% 52% at 50% 55%,#000 42%,transparent 78%);animation:pupBob 3.8s ease-in-out 1s infinite}
+@keyframes pupBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 
 /* ---------- 经历 ---------- */
 .xp-intro{max-width:36em;color:var(--ink-2);font-size:clamp(16px,1.5vw,17.5px);margin-bottom:clamp(36px,6vh,60px)}
@@ -228,9 +240,10 @@ mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%
 .adv-card{
   background:var(--card);border:1px solid var(--line-strong);border-radius:18px;
   padding:clamp(20px,2.4vw,32px);
+  transform:translateY(var(--lift,0px)) perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
   transition:transform .3s var(--ease),box-shadow .3s;
 }
-.adv-card:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:0 18px 44px -24px rgba(26,26,26,.25)}
+.adv-card:hover{--lift:-4px;transform:translateY(-4px) rotate(-.4deg) perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));box-shadow:0 18px 44px -24px rgba(26,26,26,.25)}
 /* 序号改描边数字（与幽灵序号同一套语言），黄色只留给重点字（stage v4.6 K） */
 .adv-num{
   font-weight:900;font-size:clamp(40px,3.4vw,54px);line-height:1;display:inline-block;
@@ -260,7 +273,7 @@ mark{background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%
 .el-row{
   display:flex;align-items:center;gap:clamp(16px,2.6vw,30px);
   padding:clamp(16px,2.6vh,26px) 6px;border-bottom:1px solid var(--line-strong);
-  transition:background .25s;
+  transition:background .25s;cursor:pointer;
 }
 .el-row:first-child{border-top:1px solid var(--line-strong)}
 .el-row:hover{background:var(--card)}
@@ -283,8 +296,8 @@ footer{padding-block:clamp(60px,10vh,110px) 40px;position:relative;overflow:hidd
 .foot-line .hl-text{font-weight:800;color:var(--ink);background:linear-gradient(100deg,transparent 1%,var(--hl) 4%,var(--hl) 96%,transparent 99%);padding:0 .3em}
 
 /* ---------- 动效 ---------- */
-.js .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s var(--ease);transition-delay:var(--d,0s)}
-.js .reveal.in{opacity:1;transform:none}
+.js .reveal{opacity:0;translate:0 26px;transition:opacity .8s ease,translate .8s var(--ease);transition-delay:var(--d,0s)}
+.js .reveal.in{opacity:1;translate:0 0}
 /* 荧光笔随浮现从左划过（只动 background-size，一次性，stage v4.6 M） */
 .js .reveal mark{background-size:0% 100%;background-repeat:no-repeat;transition:background-size .9s var(--ease) .35s}
 .js .reveal.in mark{background-size:100% 100%}
@@ -369,6 +382,18 @@ html.is-booting{overflow:hidden}
 @media (max-width:1366px){.hero-stats dd{font-size:20px}.hero-stats div{padding:0 14px}}
 .hero .wrap.is-rolling{will-change:transform,opacity}
 
+/* ---------- 平板竖屏（761px+ 且竖屏）：上文下狗，避免白字压亮毛 ---------- */
+@media (min-width:761px) and (max-aspect-ratio:1/1){
+  .hero{justify-content:flex-start;padding-top:110px;padding-bottom:64px}
+  .hero .wrap{grid-template-columns:1fr 1fr;align-items:start;gap:28px 44px}
+  .hero-col-l,.hero-col-r{grid-column:auto}
+  .hero-col-r{padding-top:clamp(20px,5vh,60px)}
+  .hero-title{font-size:clamp(44px,7.6vw,84px)}
+  .pup-bg video{width:150vw;height:auto;left:50%;top:auto;bottom:-6vh;transform:translateX(-50%);
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 28%);mask-image:linear-gradient(to bottom,transparent 0,#000 28%)}
+  .scroll-cue{display:none}
+}
+
 /* ---------- 响应式 ---------- */
 @media (max-width:1024px){
   .num-card{grid-template-columns:repeat(3,1fr)}
@@ -388,10 +413,11 @@ html.is-booting{overflow:hidden}
   .hero-stats dd{font-size:24px}
   .pup-bg video{
     width:240vw;height:auto;left:50%;top:auto;bottom:-16vh;transform:translateX(-50%);
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 24%);
-    mask-image:linear-gradient(to bottom,transparent 0,#000 24%);
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 38%);
+    mask-image:linear-gradient(to bottom,transparent 0,#000 38%);
   }
-  .pup-bg::after{height:22%}
+  .pup-bg::after{position:absolute;left:0;right:0;top:0;height:42%;z-index:1;pointer-events:none;
+    background:linear-gradient(to bottom,#2A1C0F 0%,rgba(42,28,15,.9) 45%,rgba(42,28,15,0) 100%)}
   .scroll-cue{display:none}
   .num-card{grid-template-columns:1fr 1fr}
   .ncell:nth-child(even){border-left:1px solid var(--line)}
@@ -405,12 +431,13 @@ html.is-booting{overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
-  .js .reveal{opacity:1;transform:none}
+  .js .reveal{opacity:1;translate:0 0}
   .curve-draw path{stroke-dashoffset:0}
   /* 入场序列全部静止就位（恢复初始隐藏态） */
   .js .hero-title .lift,.js .pup-bg,
   .js .hero-byline,.js .hero-sub,.js .scroll-cue,.js .hero-stats,
   .js .corner,.js .rail,.js .rail-num{opacity:1;transform:none;clip-path:none}
+  .js .num-card .ncell{opacity:1;transform:none}
   .js .reveal mark{background-size:100% 100%}
   .site-loader{display:none!important}
   html.is-booting{overflow:auto}
@@ -424,6 +451,7 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--ink);outline-offs
   document.documentElement.classList.add('js');
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('is-booting');
 </script>
+<a class="skip-link" href="#products">跳到正文</a>
 
 <!-- 入场 loader：只等 poster（v4.6.1 方案A，与视频解耦）后整块上滑退出；视频就绪前 hero 显示同帧 poster -->
 <div class="site-loader" id="siteLoader" aria-hidden="true">
@@ -929,6 +957,54 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--ink);outline-offs
     hero.addEventListener("pointerenter", function(){ on = true; hero.classList.add("spot-on"); kick(); });
     hero.addEventListener("pointerleave", function(){ on = false; hero.classList.remove("spot-on"); });
     hero.addEventListener("pointermove", function(e){ tx = e.clientX; ty = e.clientY; kick(); }, { passive: true });
+  })();
+
+  /* ---------- 卡片指针微倾（v4.6.4）：±1.2° 视差，transform-only，收敛即停，reduced-motion/触屏不创建 ---------- */
+  (function(){
+    if (reduced || !hoverFine) return;
+    document.querySelectorAll(".prod-card,.adv-card").forEach(function(card){
+      var raf = false, tx = 0, ty = 0, cx = 0, cy = 0, rect = null;
+      function step(){
+        cx += (tx - cx) * .18; cy += (ty - cy) * .18;
+        card.style.setProperty("--ry", cx.toFixed(2) + "deg");
+        card.style.setProperty("--rx", cy.toFixed(2) + "deg");
+        if (Math.abs(tx - cx) + Math.abs(ty - cy) > .02) requestAnimationFrame(step); else raf = false;
+      }
+      function kick(){ if (!raf){ raf = true; requestAnimationFrame(step); } }
+      card.addEventListener("pointerenter", function(){ rect = card.getBoundingClientRect(); });
+      card.addEventListener("pointermove", function(e){
+        if (!rect) rect = card.getBoundingClientRect();
+        tx = (.5 - (e.clientX - rect.left) / rect.width) * 2.4;
+        ty = ((e.clientY - rect.top) / rect.height - .5) * 1.8;
+        kick();
+      }, { passive: true });
+      card.addEventListener("pointerleave", function(){ tx = 0; ty = 0; kick(); });
+    });
+  })();
+
+  /* ---------- 交流区点击复制 handle（v4.6.4）：clipboard API + execCommand 兜底 ---------- */
+  (function(){
+    function toast(msg){
+      var d = document.createElement("div"); d.className = "copy-toast"; d.setAttribute("role", "status"); d.textContent = msg;
+      document.body.appendChild(d);
+      requestAnimationFrame(function(){ d.classList.add("show"); });
+      setTimeout(function(){ d.classList.remove("show"); setTimeout(function(){ d.remove(); }, 400); }, 1500);
+    }
+    function copyText(txt){
+      if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt);
+      return new Promise(function(res, rej){
+        var ta = document.createElement("textarea"); ta.value = txt; ta.style.cssText = "position:fixed;opacity:0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy") ? res() : rej(); } catch(e){ rej(e); } finally { ta.remove(); }
+      });
+    }
+    document.querySelectorAll(".el-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var t = row.querySelector(".el-handle"); if (!t) return;
+        var txt = t.textContent.trim();
+        copyText(txt).then(function(){ toast("已复制 " + txt); }, function(){ toast(txt); });
+      });
+    });
   })();
 })();
 </script>
