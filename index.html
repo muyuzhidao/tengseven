@@ -850,7 +850,7 @@ a:focus-visible,button:focus-visible{outline:2.5px solid var(--ink);outline-offs
   window.addEventListener("load", function(){ recalc(); schedule(); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ recalc(); schedule(); });
 
-  var lastNum = -1, lastActive = -1, lastPct = -1;
+  var lastNum = -1, lastActive = -2, lastPct = -1; /* -2 强制首帧 setActive(-1)，清掉五个区各自硬编码的 aria-current */
   var lastRoll = -1;
   var rafScheduled = false, idleFrames = 0;
   var tabGroups = document.querySelectorAll(".tabs");
